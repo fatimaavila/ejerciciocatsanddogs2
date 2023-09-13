@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
 
@@ -12,6 +12,8 @@ services:
     networks:
       - front-tier
       - back-tier
+    volumes:
+      - vote-data:/app/data
 
   result:
     build: ./result
@@ -20,7 +22,13 @@ services:
     depends_on:
       - redis
       - db
-  
+    networks:
+      - front-tier
+      - back-tier
+    volumes:
+      - result-data:/app/data
+
+
   worker:
     build: ./worker
     depends_on:
@@ -31,10 +39,28 @@ services:
 
   redis:
     image: redis:alpine
+    volumes: 
+      - db-data:/var.lib/
+    networks:
+      - back-tier
     
-
   db:
     image: postgres:9.4
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - back-tier
+      
+volumes:
+  db-data:
+  vote-data:
+  result-data:
+
+networks:
+  front-tier:
+  back-tier:
+
+
